@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+
+    <!-- Page Container -->
+    <div class="max-w-6xl mx-auto">
+        <!-- Header with Go to Home Button -->
+        <div class="flex justify-between items-center bg-blue-800 text-white p-4 rounded-lg shadow-md mb-6">
+            <h1 class="text-xl font-semibold">User Management</h1>
+            <a href="{% url 'upload_zip' %}">
+                <button class="px-4 py-2 bg-white text-blue-800 rounded shadow hover:bg-gray-200 transition">
+                    Go to Home
+                </button>
+            </a>
+        </div>
+
+        <!-- Approved Users -->
+        <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Approved Users</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full border border-gray-300 bg-white rounded-md">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="border p-3">ID</th>
+                            <th class="border p-3">Name</th>
+                            <th class="border p-3">Email</th>
+                            <th class="border p-3">Role</th>
+                            <th class="border p-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                        {% for user in approved_users %}
+                            <tr class="hover:bg-gray-100 transition">
+                                <td class="border p-3 text-center">{{ user.id }}</td>
+                                <td class="border p-3">{{ user.username }}</td>
+                                <td class="border p-3">{{ user.email }}</td>
+                                <td class="border p-3">{{ user.role }}</td>
+                                <td class="border p-3 text-center">
+                                    <a href="{% url 'toggle_approval' user.id %}">
+                                        <button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+                                            Unapprove
+                                        </button>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center p-4 text-gray-500">No approved users found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Unapproved Users -->
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Unapproved Users</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full border border-gray-300 bg-white rounded-md">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="border p-3">ID</th>
+                            <th class="border p-3">Name</th>
+                            <th class="border p-3">Email</th>
+                            <th class="border p-3">Role</th>
+                            <th class="border p-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                        {% for user in unapproved_users %}
+                            <tr class="hover:bg-gray-100 transition">
+                                <td class="border p-3 text-center">{{ user.id }}</td>
+                                <td class="border p-3">{{ user.username }}</td>
+                                <td class="border p-3">{{ user.email }}</td>
+                                <td class="border p-3">{{ user.role }}</td>
+                                <td class="border p-3 text-center">
+                                    <a href="{% url 'toggle_approval' user.id %}">
+                                        <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                                            Approve
+                                        </button>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center p-4 text-gray-500">No unapproved users found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
