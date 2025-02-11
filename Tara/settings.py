@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'robot',
     'drf_yasg',
+    'whitenoise.runserver_nostatic',
 
 ]
 
@@ -57,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware'
 ]
 
 REST_FRAMEWORK = {
