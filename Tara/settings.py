@@ -193,3 +193,5 @@ EMAIL_HOST_USER ='anumol030101@gmail.com'
 EMAIL_HOST_PASSWORD ='agwiztonuixneoip'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
+
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
