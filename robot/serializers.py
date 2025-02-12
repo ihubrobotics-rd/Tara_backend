@@ -20,7 +20,7 @@ class RobotSerializer(serializers.ModelSerializer):
         model = Robot
         fields = ['id', 'robo_name', 'robo_id', 'active_status', 
                   'battery_status', 'working_time', 'position', 
-                  'created_at', 'subscription', 'language', 'image']
+                  'created_at', 'subscription', 'language', 'image','voltage','current','voltage','power','energy']
         extra_kwargs = {
             'robo_id': {'required': True},
             'image': {'required': False},  # Ensure image is optional

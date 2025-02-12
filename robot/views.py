@@ -101,7 +101,11 @@ def create_robot(request):
                 'working_time': serialized_data['working_time'],
                 'position': serialized_data['position'],
                 'language': serialized_data['language'],
-                'subscription':serialized_data['subscription']
+                'subscription':serialized_data['subscription'],
+                'current':serialized_data['current'],
+                'energy':serialized_data['energy'],
+                'power':serialized_data['power'],
+                'voltage':serialized_data['voltage']
                
             }
         }

@@ -11,6 +11,11 @@ class Robot(models.Model):
     working_time = models.CharField(max_length=200, null=True, blank=True)
     position = models.CharField(max_length=200, null=True, blank=True)
     language = models.ForeignKey('Language', related_name='robots', on_delete=models.CASCADE, null=True, blank=True)
+    voltage=models.CharField(max_length=200,null=True,blank=True)
+    current=models.CharField(max_length=200,null=True,blank=True)
+    power=models.CharField(max_length=200,null=True,blank=True)
+    energy=models.CharField(max_length=200,null=True,blank=True)
+
 
     def __str__(self):
         return self.robo_name

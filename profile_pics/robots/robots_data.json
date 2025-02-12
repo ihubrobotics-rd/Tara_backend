@@ -1,170 +1,17 @@
 {
-    "RBT-007-ihr": {
-        "robo_id": "RBT-007-ihr",
-        "robo_name": "Tara",
-        "active_status": true,
-        "battery_status": "81%",
-        "working_time": "5h",
-        "position": "Warehouse A",
-        "language": "hindi",
-        "image": "http://127.0.0.1:8000/profile_pics/robo_image/LtttNC6_dOaGg0g.jpg"
-    },
-    "RBT-008-ihr": {
-        "robo_id": "RBT-008-ihr",
-        "robo_name": "Robo8",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi",
-        "image": "http://127.0.0.1:8000/profile_pics/robo_image/LtttNC6_sDoV7n9.jpg"
-    },
-    "RBT-0010-ihr": {
-        "robo_id": "RBT-0010-ihr",
-        "robo_name": "Tara",
-        "active_status": true,
-        "battery_status": "81%",
-        "working_time": "5h",
-        "position": "Warehouse A",
-        "language": "hindi",
-        "image": "http://127.0.0.1:8000/profile_pics/robo_image/LtttNC6_YWlKt4q.jpg"
-    },
-    "RBT-0011-ihr": {
-        "robo_id": "RBT-0011-ihr",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi",
-        "image": "http://127.0.0.1:8000/profile_pics/robo_image/LtttNC6_vrOrn20.jpg"
-    },
-    "RBT-0012-ihr": {
-        "robo_id": "RBT-0012-ihr",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi",
-        "image": null
-    },
-    "RBT-0013-ihr": {
-        "robo_id": "RBT-0013-ihr",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi",
-        "image": null
-    },
-    "RBT-0014-ihr": {
-        "robo_id": "RBT-0014-ihr",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi",
-        "image": null
-    },
-    "RBT-0015-ihr": {
-        "robo_id": "RBT-0015-ihr",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi"
-    },
-    "RBT-0016-ihr": {
-        "robo_id": "RBT-0016-ihr",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi",
-        "image": "http://127.0.0.1:8000/profile_pics/robo_image/LtttNC6_RyNdNoH.jpg"
-    },
-    "RBT-0017-ihr": {
-        "robo_id": "RBT-0017-ihr",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi",
-        "image": "http://127.0.0.1:8000/profile_pics/robo_image/LtttNC6_K8GEqYV.jpg"
-    },
-    "RBT-0018-ihr": {
-        "robo_id": "RBT-0018-ihr",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi"
-    },
-    "RBT-0019-ihr": {
-        "robo_id": "RBT-0019-ihr",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi"
-    },
-    "RBT-0020-ihr": {
-        "robo_id": "RBT-0020-ihr",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi",
-        "image": null
-    },
-    "RB1": {
-        "robo_id": "RB1",
-        "robo_name": "New",
-        "active_status": true,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi",
-        "subscription": true
-    },
-    "RB2": {
-        "robo_id": "RB2",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi"
-    },
     "RB3": {
-        "id": 26,
+        "id": 2,
         "robo_id": "RB3",
-        "robo_name": "Robo",
-        "active_status": false,
-        "battery_status": null,
-        "working_time": null,
-        "position": null,
-        "language": "hindi"
-    },
-    "RB4": {
-        "id": 27,
-        "robo_id": "RB4",
         "robo_name": "New",
         "active_status": true,
-        "subscription": true,
         "battery_status": null,
         "working_time": null,
         "position": null,
         "language": "hindi",
-        "last_updated": "2025-02-03T15:50:37.124986"
+        "subscription": true,
+        "current": "2",
+        "energy": "31",
+        "power": "34",
+        "voltage": "22"
     }
 }
