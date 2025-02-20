@@ -26,6 +26,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
+import uuid
+import time
+import threading
 
 #admin register 
 @api_view(['POST'])
@@ -429,7 +432,7 @@ def upload_background_image(request, user_id):
 
         # Create the absolute URL for the uploaded image
         base_url = request.build_absolute_uri('/')  # Full domain (e.g., http://127.0.0.1:8000/)
-        image_url = base_url + 'media/background_image/' + str(user_id) + '/' + background_image.name
+        image_url = base_url + 'profile_pics/background_image/' + str(user_id) + '/' + background_image.name
 
         return Response({
             'status': 'ok',
@@ -452,7 +455,7 @@ def list_background_images(request, user_id):
             file_path = os.path.join(upload_dir, latest_file)
             if os.path.isfile(file_path):
                 base_url = request.build_absolute_uri('/')  
-                image_url = base_url + 'media/background_image/' + str(user_id) + '/' + latest_file
+                image_url = base_url + 'profile_pics/background_image/' + str(user_id) + '/' + latest_file
 
                 return Response({
                     'status': 'ok',
@@ -492,3 +495,156 @@ def superadmin_login(request):
 def superadmin_logout(request):
     logout(request)  # Logs out the user
     return redirect('superadmin_login') 
+
+
+# robot power on 
+ROBOT_STATUS = {"is_on": False}
+
+@api_view(['POST'])
+def turn_on(request):
+    ROBOT_STATUS["is_on"] = True
+    return Response({"message": "Robot turned ON", "status": "ON"})
+
+# robot power off
+@api_view(['POST'])
+def turn_off(request):
+    ROBOT_STATUS["is_on"] = False
+    return Response({"message": "Robot turned OFF", "status": "OFF"})
+
+# robot power status
+@api_view(['GET'])
+def robot_status(request):
+    return Response({"status": "ON" if ROBOT_STATUS["is_on"] else "OFF"})
+
+
+STATUS = {"state": "UNKNOWN", "last_updated": datetime.utcnow()}
+
+def monitor_status():
+    """
+    Background thread to check if the status is unchanged for 10 seconds.
+    If unchanged, update the status to "NO_FACE".
+    """
+    while True:
+        time.sleep(10)  # Check every 10 seconds
+        if (datetime.utcnow() - STATUS["last_updated"]).total_seconds() >= 10:
+            STATUS["state"] = "NO_FACE"
+            STATUS["last_updated"] = datetime.utcnow()
+
+# Start the background monitoring thread
+thread = threading.Thread(target=monitor_status, daemon=True)
+thread.start()
+
+@api_view(['POST'])
+def update_status(request):
+    """
+    Update the status.
+    - If "status" is "UNKNOWN", update to "UNKNOWN".
+    - If "status" is "NO_FACE", update to "NO_FACE".
+    - If "status" is anything else, update to "KNOWN".
+    - If the status is unchanged for 10 seconds, it automatically updates to "NO_FACE".
+    """
+    new_status = request.data.get("status", "").strip().upper()
+
+    if new_status == STATUS["state"]:
+        # If status remains the same, do not update the timestamp
+        return Response({
+            "message": f"Status remains {STATUS['state']}",
+            "status": STATUS["state"]
+        })
+
+    # Update status and timestamp
+    if new_status == "UNKNOWN":
+        STATUS["state"] = "UNKNOWN"
+    elif new_status == "NO_FACE":
+        STATUS["state"] = "NO_FACE"
+    else:
+        STATUS["state"] = "KNOWN"
+
+    STATUS["last_updated"] = datetime.utcnow()
+
+    return Response({
+        "message": f"Status updated to {STATUS['state']}",
+        "status": STATUS["state"]
+    })
+
+@api_view(['GET'])
+def get_status(request):
+    """
+    Retrieve the current status.
+    """
+    return Response({"status": STATUS["state"]})
+
+#stop button api
+# Global variable to store the latest session ID
+
+SESSION_DATA = {"session_id": None, "timestamp": None}
+
+@api_view(['GET'])
+def generate_session_id(request):
+    """
+    Generate a new random session ID, store it, and set an expiration time.
+    """
+    session_id = str(uuid.uuid4())  
+    SESSION_DATA["session_id"] = session_id
+    SESSION_DATA["timestamp"] = time.time()  # Store the current timestamp
+
+    return Response({
+        "status": "ok",
+        "message": "Session ID generated successfully",
+        "session_id": session_id
+    })
+
+@api_view(['GET'])
+def get_session_id(request):
+    """
+    Retrieve the last generated session ID.
+    If more than 5 seconds have passed, expire the session ID.
+    """
+    if SESSION_DATA["session_id"] is None:
+        return Response({"error": "No session ID generated yet."}, status=404)
+
+    current_time = time.time()
+    elapsed_time = current_time - SESSION_DATA["timestamp"]
+
+    if elapsed_time > 5:  # Check if 5 seconds have passed
+        SESSION_DATA["session_id"] = None
+        SESSION_DATA["timestamp"] = None
+        return Response({"error": "Session ID expired."}, status=403)
+
+    return Response({"session_id": SESSION_DATA["session_id"]})
+
+
+
+VIDEO_STATUS = {
+    "status": False,
+    "last_updated": time.time()  # Store last updated timestamp
+}
+
+@api_view(['GET'])
+def check_video_status(request):
+    """
+    Returns the current video status.
+    If status is False → Response: "Not Take Video"
+    If status is True → Response: "Take Video"
+    """
+    if VIDEO_STATUS["status"]:
+        return Response({"status": True, "message": "Take Video"}, status=status.HTTP_200_OK)
+    else:
+        return Response({"status": False, "message": "Not Take Video"}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def update_video_status(request):
+    """
+    Updates the video status based on the provided JSON data.
+    Expected JSON: { "status": true/false }
+    
+    Also updates the last_updated timestamp.
+    """
+    new_status = request.data.get("status")
+
+    if isinstance(new_status, bool):  # Ensures it's a boolean value
+        VIDEO_STATUS["status"] = new_status
+        VIDEO_STATUS["last_updated"] = time.time()  # Update timestamp
+        return Response({"message": "Status updated", "status": new_status}, status=status.HTTP_200_OK)
+    
+    return Response({"error": "Invalid data. Provide 'status' as true/false."}, status=status.HTTP_400_BAD_REQUEST)

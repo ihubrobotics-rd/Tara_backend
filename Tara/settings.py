@@ -90,23 +90,23 @@ WSGI_APPLICATION = 'Tara.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ihub_Tara',
-        'USER': 'admin',
-        'PASSWORD': 'X7g#pQvM',
-        'HOST': 'database-1.cju42e4e4pr7.us-east-1.rds.amazonaws.com',  # Use '127.0.0.1' if 'localhost' causes issues
-        'PORT': '3306',  # Default MySQL port
-       
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'ihub_Tara',
+#         'USER': 'admin',
+#         'PASSWORD': 'X7g#pQvM',
+#         'HOST': 'database-1.cju42e4e4pr7.us-east-1.rds.amazonaws.com',
+#         'PORT': '3306',  
+       
+#     }
+# }
 
 
 

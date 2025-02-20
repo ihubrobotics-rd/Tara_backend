@@ -52,4 +52,6 @@ urlpatterns = [
     path("update_status/", update_status, name="update_status"),
     path("list_status/", list_status, name="list_status"),
 
+    path('latest-customer-session/', latest_customer_session, name='latest-customer-session'),
+
 ]

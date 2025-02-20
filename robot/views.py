@@ -850,7 +850,7 @@ def download_customers_csv(request):
 @api_view(['PATCH'])
 def edit_customer_summery(request, session_id):
     """
-    Edit the 'summery' field of an existing NewCustomers instance using session_id from the URL
+    Edit the 'summery', 'username', and 'purpose' fields of an existing NewCustomers instance using session_id
     and return all customer data for frontend use.
     """
     try:
@@ -860,22 +860,31 @@ def edit_customer_summery(request, session_id):
             {"status": "error", "message": "Customer with the provided session ID does not exist."},
             status=status.HTTP_404_NOT_FOUND
         )
-    
+
+    # Get fields from request data
     summery = request.data.get('summery')
+    username = request.data.get('username')
+    purpose = request.data.get('purpose')
+
+    # Update only if values are provided
     if summery is not None:
         customer.summery = summery
-        customer.save()
+    if username is not None:
+        customer.username = username
+    if purpose is not None:
+        customer.purpose = purpose
+
+    customer.save()
 
     serializer = NewCustomersSerializer(customer)
     return Response(
         {
             "status": "ok",
-            "message": "Customer data retrieved successfully." if summery is None else "Summery updated successfully.",
+            "message": "Customer details updated successfully.",
             "data": serializer.data  
         },
         status=status.HTTP_200_OK
     )
-
 
 #customer detail view 
 @api_view(['GET'])
@@ -1410,7 +1419,7 @@ def list_zip_files(request, robo_id):
 # video playing updation
 state = {
     "listening": False,
-    "stand_by": False,
+    "waiting": False,
     "speaking": False,
 }
 
@@ -1418,7 +1427,7 @@ state = {
 COMMAND_MAPPING = {
     "SPEAKING_VIDEO": "speaking",
     "LISTENING_VIDEO": "listening",
-    "STAND_BY_VIDEO": "stand_by",
+    "WAITING_VIDEO": "waiting",
 }
 
 @api_view(["POST"])
@@ -1455,4 +1464,26 @@ def list_status(request):
             "data": state,
         },
         status=status.HTTP_200_OK,
+    )
+
+
+@api_view(['GET'])
+def latest_customer_session(request):
+    """
+    Retrieve the latest customer session ID where the username is NULL or empty.
+    """
+    latest_customer = NewCustomers.objects.filter(username__isnull=True).order_by('-id').first()
+
+    if not latest_customer:
+        latest_customer = NewCustomers.objects.filter(username="").order_by('-id').first()
+
+    if latest_customer:
+        return Response(
+            {"status": "ok", "latest_session_id": latest_customer.session_id},
+            status=status.HTTP_200_OK
+        )
+    
+    return Response(
+        {"status": "error", "message": "No customers found with a NULL or empty username"},
+        status=status.HTTP_404_NOT_FOUND
     )
