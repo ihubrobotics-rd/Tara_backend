@@ -598,7 +598,7 @@ def generate_session_id(request):
 def get_session_id(request):
     """
     Retrieve the last generated session ID.
-    If more than 5 seconds have passed, expire the session ID.
+    If more than 30 seconds have passed, expire the session ID.
     """
     if SESSION_DATA["session_id"] is None:
         return Response({"error": "No session ID generated yet."}, status=404)
@@ -606,7 +606,7 @@ def get_session_id(request):
     current_time = time.time()
     elapsed_time = current_time - SESSION_DATA["timestamp"]
 
-    if elapsed_time > 5:  # Check if 5 seconds have passed
+    if elapsed_time > 30:  # Check if 5 seconds have passed
         SESSION_DATA["session_id"] = None
         SESSION_DATA["timestamp"] = None
         return Response({"error": "Session ID expired."}, status=403)

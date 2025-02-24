@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'robot',
     'drf_yasg',
     'whitenoise.runserver_nostatic',
+    'enquiry'
 
 ]
 
