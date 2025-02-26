@@ -30,11 +30,11 @@ urlpatterns = [
     path('customer/edit/<str:session_id>/', edit_customer_summery, name='edit-customer-summery'),
     path('customer/detail/<str:session_id>/', customer_detail_view, name='customer_detail'),
     
-    path('add/employee/', create_employee, name='create-employee'),
-    path('list/employee/', list_employees, name='list-employees'),
-    path('edit/employee/<str:employee_id>/', edit_employee, name='edit-employee'),
-    path('detail/employee/<str:employee_id>/', employee_detail, name='employee-detail'),
-    path('employee/delete/<str:employee_id>/', delete_employee, name='delete-employee'),
+    path('add/employee/<int:user_id>/', create_employee, name='create-employee'),
+    path('list/employee/<int:user_id>/', list_employees, name='list-employees'),
+    path('edit/employee/<int:user_id>/<str:employee_id>/', edit_employee, name='edit-employee'),
+    path('detail/employee/<int:user_id>/<str:employee_id>/', employee_detail, name='employee-detail'),
+    path('employee/delete/<int:user_id>/<str:employee_id>/', delete_employee, name='delete-employee'),
 
 
     path('add/punching/', create_punch, name='create-punch'),

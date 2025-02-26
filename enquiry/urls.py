@@ -21,4 +21,12 @@ urlpatterns = [
     path('enquiry/update/<int:enquiry_id>/', update_enquiry_details, name='update-enquiry'),
     path('enquiry/details/<int:enquiry_id>/', enquiry_details, name='detail-enquiry'),
     path('enquiry/details/delete/<int:enquiry_id>/', delete_enquiry_details, name='delete-enquiry'),
+
+    path('talk/stop/update/', talking_stop, name='talking_stop_update'),
+    path('talk/status/',talking_status,name='talk_status'),
+
+    path('navigation/create/', create_navigation, name='create_navigation'),
+    path('navigation/list/<int:user_id>/', list_navigation, name='list_navigation'),
+    path('navigation/<int:nav_id>/', get_navigation_by_id, name='get_navigation_by_id'),
+    path('navigation/last-clicked/', get_last_clicked_navigation, name='get_last_clicked_navigation'),
 ]

@@ -914,14 +914,26 @@ def customer_detail_view(request, session_id):
 
 #employee create
 @api_view(['POST'])
-def create_employee(request):
+def create_employee(request, user_id):
     """
     Create a new employee and return the employee details.
+    The user ID is passed as a URL parameter and automatically assigned to the employee.
     """
-    serializer = EmployeeSerializer(data=request.data)
+    try:
+        user = CustomUser.objects.get(id=user_id)  # Fetch the user instance
+    except CustomUser.DoesNotExist:
+        return Response(
+            {"status": "error", "message": "Invalid user ID."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    data = request.data.copy()  # Create a mutable copy of request data
+    data['user'] = user.id  # Assign user ID to the data
+
+    serializer = EmployeeSerializer(data=data)
     if serializer.is_valid():
-        employee = serializer.save()  
-        serialized_data = EmployeeSerializer(employee).data 
+        employee = serializer.save(user=user)  # Save employee with user instance
+        serialized_data = EmployeeSerializer(employee).data
         return Response(
             {
                 "status": "ok",
@@ -930,6 +942,7 @@ def create_employee(request):
             },
             status=status.HTTP_201_CREATED,
         )
+
     return Response(
         {
             "status": "error",
@@ -939,12 +952,19 @@ def create_employee(request):
     )
 
 #employee list
+
 @api_view(['GET'])
-def list_employees(request):
+def list_employees(request, user_id=None):
     """
-    Retrieve a list of all employees.
+    Retrieve a list of employees.
+    - If `user_id` is provided in the URL, filter employees by that user.
+    - Otherwise, return all employees.
     """
-    employees = Employee.objects.all() 
+    if user_id:
+        employees = Employee.objects.filter(user_id=user_id)
+    else:
+        employees = Employee.objects.all()
+
     serialized_data = EmployeeSerializer(employees, many=True).data  
     return Response(
         {
@@ -956,17 +976,19 @@ def list_employees(request):
     )
 
 
+
 #employee edit
 @api_view(['PUT'])
-def edit_employee(request, employee_id):
+def edit_employee(request, user_id, employee_id):
     """
-    Edit an existing employee's details by employee_id.
+    Edit an existing employee's details by employee_id and user_id.
+    Ensures that the employee being updated belongs to the specified user.
     """
     try:
-        employee = Employee.objects.get(employee_id=employee_id)  
+        employee = Employee.objects.get(employee_id=employee_id, user_id=user_id)  
     except Employee.DoesNotExist:
         return Response(
-            {"status": "error", "message": "Employee not found."},
+            {"status": "error", "message": "Employee not found for this user."},
             status=status.HTTP_404_NOT_FOUND,
         )
 
@@ -990,16 +1012,18 @@ def edit_employee(request, employee_id):
     )
 
 #employee detail
+
 @api_view(['GET'])
-def employee_detail(request, employee_id):
+def employee_detail(request, user_id, employee_id):
     """
-    Retrieve details of an employee by employee_id.
+    Retrieve details of an employee by employee_id and user_id.
+    Ensures that the employee belongs to the specified user.
     """
     try:
-        employee = Employee.objects.get(employee_id=employee_id)  
+        employee = Employee.objects.get(employee_id=employee_id, user_id=user_id)  
     except Employee.DoesNotExist:
         return Response(
-            {"status": "error", "message": "Employee not found."},
+            {"status": "error", "message": "Employee not found for this user."},
             status=status.HTTP_404_NOT_FOUND,
         )
 
@@ -1013,14 +1037,16 @@ def employee_detail(request, employee_id):
         status=status.HTTP_200_OK,
     )
 
+
 #delete employee
 @api_view(['DELETE'])
-def delete_employee(request, employee_id):
+def delete_employee(request, user_id, employee_id):
     """
-    Delete an employee by employee_id.
+    Delete an employee by employee_id and user_id.
+    Ensures that the employee belongs to the specified user.
     """
     try:
-        employee = Employee.objects.get(employee_id=employee_id)  
+        employee = Employee.objects.get(employee_id=employee_id, user_id=user_id)  
         employee.delete() 
         return Response(
             {"status": "ok", "message": "Employee deleted successfully."},
@@ -1028,9 +1054,10 @@ def delete_employee(request, employee_id):
         )
     except Employee.DoesNotExist:
         return Response(
-            {"status": "error", "message": "Employee not found."},
+            {"status": "error", "message": "Employee not found for this user."},
             status=status.HTTP_404_NOT_FOUND,
         )
+
     
 #add punching
 @api_view(['POST'])

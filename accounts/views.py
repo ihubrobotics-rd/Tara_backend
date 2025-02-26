@@ -29,6 +29,10 @@ from django.shortcuts import get_object_or_404
 import uuid
 import time
 import threading
+import uuid
+import time
+from django.core.cache import cache
+from robot.models import *
 
 #admin register 
 @api_view(['POST'])
@@ -594,27 +598,40 @@ def generate_session_id(request):
         "session_id": session_id
     })
 
+
 @api_view(['GET'])
 def get_session_id(request):
     """
-    Retrieve the last generated session ID.
-    If more than 30 seconds have passed, expire the session ID.
+    Retrieve the most recently generated ID (either session ID or latest employee ID).
+    - If a new session ID is found and generated in the last 30 seconds, return it.
+    - If no valid session ID exists, fetch the latest employee where name and designation are NULL from the database.
+    - If neither exists, return an error.
     """
-    if SESSION_DATA["session_id"] is None:
-        return Response({"error": "No session ID generated yet."}, status=404)
-
     current_time = time.time()
-    elapsed_time = current_time - SESSION_DATA["timestamp"]
+    elapsed_time = current_time - SESSION_DATA["timestamp"] if SESSION_DATA["timestamp"] else float("inf")
 
-    if elapsed_time > 30:  # Check if 5 seconds have passed
-        SESSION_DATA["session_id"] = None
-        SESSION_DATA["timestamp"] = None
-        return Response({"error": "Session ID expired."}, status=403)
+    # Check if a new session ID is valid (within 30 seconds)
+    if SESSION_DATA["session_id"] and elapsed_time <= 30:
+        return Response({
+            "status": "ok",
+            "message": "Session ID retrieved successfully.",
+            "id_type": "session_id",
+            "session_id": SESSION_DATA["session_id"]
+        }, status=status.HTTP_200_OK)
 
-    return Response({"session_id": SESSION_DATA["session_id"]})
+    # Retrieve the latest employee directly from the database where name and designation are NULL
+    latest_employee = Employee.objects.filter(employee_name__isnull=True, designation__isnull=True).order_by('-id').first()
+    
+    if latest_employee:
+        return Response({
+            "status": "ok",
+            "message": "Latest employee retrieved successfully.",
+            "id_type": "employee_id",
+            "session_id": latest_employee.employee_id
+        }, status=status.HTTP_200_OK)
 
-
-
+    # If neither a valid session ID nor employee ID exists, return an error
+    return Response({"error": "No valid session ID or employee found."}, status=status.HTTP_404_NOT_FOUND)
 VIDEO_STATUS = {
     "status": False,
     "last_updated": time.time()  # Store last updated timestamp

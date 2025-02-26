@@ -26,3 +26,11 @@ class EnquiryDetails(models.Model):
 
     def __str__(self):
         return self.heading
+
+
+class Navigation(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'role': 'user'})
+    nav_id = models.CharField(max_length=50, unique=True,null=True,blank=True) 
+    name = models.CharField(max_length=100) 
+    def __str__(self):
+        return f"{self.name} - {self.nav_id}"

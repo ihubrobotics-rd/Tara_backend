@@ -28,3 +28,10 @@ class EnquiryDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = EnquiryDetails
         fields = ['id', 'heading', 'description', 'image', 'other_headings', 'subheading']
+
+
+
+class NavigationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Navigation
+        fields = ['id', 'user', 'nav_id', 'name']

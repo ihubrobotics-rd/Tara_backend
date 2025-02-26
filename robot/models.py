@@ -53,7 +53,8 @@ class NewCustomers(models.Model):
         return self.username
     
 class Employee(models.Model):
-    employee_id=models.CharField(max_length=100,null=True,blank=True)
+    user=models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True,blank=True)
+    employee_id=models.CharField(max_length=100,null=True,blank=True,unique=True)
     employee_name=models.CharField(max_length=200,null=True,blank=True)
     designation=models.CharField(max_length=300,null=True,blank=True)
 
