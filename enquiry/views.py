@@ -130,22 +130,29 @@ def create_subbutton(request):
 def list_subbuttons(request):
     """
     List all SubButtons with their associated Enquiry details.
-    - If `user_id` is provided in query parameters, filter by the user's enquiries.
-    - If `enquiry_id` is provided, filter by the specific enquiry.
+    - If `user_id` and `enquiry_id` are provided, filter by both.
+    - If only `user_id` is provided, filter by user's enquiries.
+    - If only `enquiry_id` is provided, filter by the specific enquiry.
     """
     user_id = request.GET.get('user_id')  # Get user_id from query parameters
     enquiry_id = request.GET.get('enquiry_id')  # Get enquiry_id from query parameters
 
-    subbuttons = SubButton.objects.select_related('enquiry').all()
+    subbuttons = SubButton.objects.select_related('enquiry')
 
-    if user_id:
+    if user_id and enquiry_id:
+        # Filter only subbuttons that match BOTH user_id and enquiry_id
+        subbuttons = subbuttons.filter(enquiry__user_id=user_id, enquiry_id=enquiry_id)
+    elif user_id:
         subbuttons = subbuttons.filter(enquiry__user_id=user_id)
-    
-    if enquiry_id:
+    elif enquiry_id:
         subbuttons = subbuttons.filter(enquiry_id=enquiry_id)
 
     serializer = SubButtonSerializer(subbuttons, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
 
 
 

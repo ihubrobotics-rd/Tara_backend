@@ -13,5 +13,21 @@
         "energy": "31",
         "power": "34",
         "voltage": "22"
+    },
+    "RB1": {
+        "id": 1,
+        "robo_id": "RB1",
+        "robo_name": "robo3",
+        "active_status": false,
+        "battery_status": "45%",
+        "working_time": null,
+        "position": null,
+        "language": "hindi",
+        "subscription": false,
+        "current": "2",
+        "energy": "31",
+        "power": "34",
+        "voltage": "22",
+        "quality": "22"
     }
 }

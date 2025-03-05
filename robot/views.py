@@ -105,7 +105,10 @@ def create_robot(request):
                 'current':serialized_data['current'],
                 'energy':serialized_data['energy'],
                 'power':serialized_data['power'],
-                'voltage':serialized_data['voltage']
+                'voltage':serialized_data['voltage'],
+                'quality':serialized_data['quality'],
+                'map':serialized_data['map']
+
                
             }
         }
@@ -381,7 +384,9 @@ def update_robot_by_id(request, robo_id):
                     'working_time': serialized_data['working_time'],
                     'position': serialized_data['position'],
                     'language': serialized_data['language'],
-                    'subscription': serialized_data['subscription']
+                    'subscription': serialized_data['subscription'],
+                    'quality':serialized_data['quality'],
+                    'map':serialized_data['map']
                 })
 
             with open(file_path, 'w') as json_file:
@@ -979,20 +984,20 @@ def list_employees(request, user_id=None):
 
 #employee edit
 @api_view(['PUT'])
-def edit_employee(request, user_id, employee_id):
+def edit_employee(request, employee_id):
     """
-    Edit an existing employee's details by employee_id and user_id.
-    Ensures that the employee being updated belongs to the specified user.
+    Edit an existing employee's details by employee_id.
     """
     try:
-        employee = Employee.objects.get(employee_id=employee_id, user_id=user_id)  
+        employee = Employee.objects.get(employee_id=employee_id)
     except Employee.DoesNotExist:
         return Response(
-            {"status": "error", "message": "Employee not found for this user."},
+            {"status": "error", "message": "Employee not found."},
             status=status.HTTP_404_NOT_FOUND,
         )
 
-    serializer = EmployeeSerializer(employee, data=request.data, partial=True)  
+    serializer = EmployeeSerializer(employee, data=request.data, partial=True)
+
     if serializer.is_valid():
         serializer.save()
         return Response(
@@ -1011,19 +1016,19 @@ def edit_employee(request, user_id, employee_id):
         status=status.HTTP_400_BAD_REQUEST,
     )
 
+
 #employee detail
 
 @api_view(['GET'])
-def employee_detail(request, user_id, employee_id):
+def employee_detail(request, employee_id):
     """
-    Retrieve details of an employee by employee_id and user_id.
-    Ensures that the employee belongs to the specified user.
+    Retrieve details of an employee by employee_id.
     """
     try:
-        employee = Employee.objects.get(employee_id=employee_id, user_id=user_id)  
+        employee = Employee.objects.get(employee_id=employee_id)
     except Employee.DoesNotExist:
         return Response(
-            {"status": "error", "message": "Employee not found for this user."},
+            {"status": "error", "message": "Employee not found."},
             status=status.HTTP_404_NOT_FOUND,
         )
 

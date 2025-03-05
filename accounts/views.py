@@ -33,6 +33,7 @@ import uuid
 import time
 from django.core.cache import cache
 from robot.models import *
+from django.contrib.auth.hashers import check_password
 
 #admin register 
 @api_view(['POST'])
@@ -665,3 +666,48 @@ def update_video_status(request):
         return Response({"message": "Status updated", "status": new_status}, status=status.HTTP_200_OK)
     
     return Response({"error": "Invalid data. Provide 'status' as true/false."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def verify_user_password(request, user_id):
+    """
+    API to verify user password based on user_id passed in URL.
+    """
+    entered_password = request.data.get('password')
+    if not entered_password:
+        return Response({'message': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    if check_password(entered_password, user.password):
+        return Response({
+            'status':'ok',
+            'message': 'Password is correct',
+            'user_id': user.id,
+            'role': user.role
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({'message': 'Incorrect password'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+def update_model_status(request):
+    """Updates the status (True/False) and stores it in cache."""
+    new_status = request.data.get("status")
+
+    if new_status not in [True, False]:  # Ensure only True or False is accepted
+        return Response({"error": "Invalid status. Use True or False."}, status=status.HTTP_400_BAD_REQUEST)
+
+    cache.set("current_status", new_status, timeout=None)  # Store status in cache with no expiry
+    return Response({"message": "Status updated successfully", "status": new_status}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_model_status(request):
+    """Retrieves the current status from cache."""
+    current_status = cache.get("current_status")
+
+    if current_status is None:
+        return Response({"error": "No status found. Please update status first."}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response({"message": "Current status retrieved successfully", "status": current_status}, status=status.HTTP_200_OK)

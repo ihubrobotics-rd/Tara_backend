@@ -38,8 +38,15 @@ urlpatterns = [
     path('session_id/generate/', generate_session_id, name='generate_session_id'),
     path('session/get/', get_session_id, name='get_session_id'),
 
-    path('video/status/', check_video_status, name='check_video_status'),  # GET: Check status
-    path('video/update/', update_video_status, name='update_video_status'),  # POST: Update status
+    path('video/status/', check_video_status, name='check_video_status'), 
+    path('video/update/', update_video_status, name='update_video_status'),  
+
+
+    path('verify-password/<int:user_id>/', verify_user_password, name='verify-password'),
+
+    path('update/model/status/', update_model_status, name='update_model_status'),
+    path('get/model/status/', get_model_status, name='get_model_status'),
+
 ]
 
 

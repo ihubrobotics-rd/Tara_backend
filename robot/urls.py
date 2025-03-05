@@ -32,8 +32,8 @@ urlpatterns = [
     
     path('add/employee/<int:user_id>/', create_employee, name='create-employee'),
     path('list/employee/<int:user_id>/', list_employees, name='list-employees'),
-    path('edit/employee/<int:user_id>/<str:employee_id>/', edit_employee, name='edit-employee'),
-    path('detail/employee/<int:user_id>/<str:employee_id>/', employee_detail, name='employee-detail'),
+    path('edit/employee/<str:employee_id>/', edit_employee, name='edit-employee'),
+    path('detail/employee/<str:employee_id>/', employee_detail, name='employee-detail'),
     path('employee/delete/<int:user_id>/<str:employee_id>/', delete_employee, name='delete-employee'),
 
 

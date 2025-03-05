@@ -15,7 +15,8 @@ class Robot(models.Model):
     current=models.CharField(max_length=200,null=True,blank=True)
     power=models.CharField(max_length=200,null=True,blank=True)
     energy=models.CharField(max_length=200,null=True,blank=True)
-
+    quality=models.CharField(max_length=200,null=True,blank=True)
+    map=models.BooleanField(default=False)
 
     def __str__(self):
         return self.robo_name
