@@ -478,7 +478,7 @@ def post_message(request, robot_id: str):
     if not message:
         return Response({"error": "Message is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-    cache.set(MESSAGE_CACHE_KEY.format(robot_id), message, timeout=3) 
+    cache.set(MESSAGE_CACHE_KEY.format(robot_id), message, timeout=15) 
     return Response({"status": "ok", "message": "Message posted successfully"}, status=status.HTTP_201_CREATED)
 
 
@@ -487,7 +487,7 @@ def get_message(request, robot_id: str):
     """API to get the latest message for a specific robot, or return 'no message' if expired"""
     message = cache.get(MESSAGE_CACHE_KEY.format(robot_id))
     if not message:
-        return Response({"status": "no message"}, status=status.HTTP_200_OK)
+        return Response({"status": "ok","message": "no message"}, status=status.HTTP_200_OK)
 
     return Response({"status": "ok", "message": message}, status=status.HTTP_200_OK)
 
@@ -500,7 +500,7 @@ def button_click(request, robot_id: str):
     if status_value not in ["true", "false"]:
         return Response({"error": "Invalid status. Use 'true' or 'false'."}, status=status.HTTP_400_BAD_REQUEST)
 
-    cache.set(BUTTON_STATUS_KEY.format(robot_id), status_value, timeout=3)  # Store for 5 minutes
+    cache.set(BUTTON_STATUS_KEY.format(robot_id), status_value, timeout=15)  # Store for 5 minutes
     return Response({"status": "ok", "message": f"Button clicked, status set to {status_value}"}, status=status.HTTP_200_OK)
 
 
