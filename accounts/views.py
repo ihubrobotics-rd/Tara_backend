@@ -504,23 +504,23 @@ def superadmin_logout(request):
 
 
 # robot power on 
-ROBOT_STATUS = {"is_on": False}
-
 @api_view(['POST'])
 def turn_on(request):
-    ROBOT_STATUS["is_on"] = True
+    """Turn the robot ON (store status in cache)"""
+    cache.set("robot_status", True, timeout=None)  # Store persistently
     return Response({"message": "Robot turned ON", "status": "ON"})
 
-# robot power off
 @api_view(['POST'])
 def turn_off(request):
-    ROBOT_STATUS["is_on"] = False
+    """Turn the robot OFF"""
+    cache.set("robot_status", False, timeout=None)
     return Response({"message": "Robot turned OFF", "status": "OFF"})
 
-# robot power status
 @api_view(['GET'])
 def robot_status(request):
-    return Response({"status": "ON" if ROBOT_STATUS["is_on"] else "OFF"})
+    """Get the current robot status"""
+    status = cache.get("robot_status", False)  # Default to False if not set
+    return Response({"status": "ON" if status else "OFF"})
 
 
 STATUS = {"state": "UNKNOWN", "last_updated": datetime.utcnow()}
