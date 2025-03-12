@@ -20,6 +20,7 @@ class Robot(models.Model):
     emergency_stop=models.BooleanField(default=False)
     motor_brake_released=models.BooleanField(default=False)
     ready_to_navigate=models.BooleanField(default=False)
+    volume=models.IntegerField(default=50)
 
     def __str__(self):
         return self.robo_name

@@ -110,7 +110,8 @@ def create_robot(request):
                 'map':serialized_data['map'],
                 'emergency_stop':serialized_data['emergency_stop'],
                 'motor_brake_released':serialized_data['motor_brake_released'],
-                'ready_to_navigate':serialized_data['ready_to_navigate']
+                'ready_to_navigate':serialized_data['ready_to_navigate'],
+                'volume':serialized_data['volume']
                 
 
                
@@ -393,7 +394,8 @@ def update_robot_by_id(request, robo_id):
                     'map':serialized_data['map'],
                     'emergency_stop':serialized_data['emergency_stop'],
                     'motor_brake_released':serialized_data['motor_brake_released'],
-                    'ready_to_navigate':serialized_data['ready_to_navigate']
+                    'ready_to_navigate':serialized_data['ready_to_navigate'],
+                    'volume':serilaized_data['volume']
                 })
 
             with open(file_path, 'w') as json_file:
