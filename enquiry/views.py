@@ -446,24 +446,25 @@ def get_latest_stcm_file(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# Store volumes for different robots in memory
-robo_volumes = {}
+# Global variable to store volume (default is 50)
+robo_volume = 50  
 
 def set_volume(request, robo_id, volume):
+    """API to set volume (same for all robots)"""
+    global robo_volume  # Use global variable
     try:
         volume = int(volume)  # Ensure volume is an integer
-
         if 0 <= volume <= 150:
-            robo_volumes[robo_id] = volume
-            return JsonResponse({"message": "Volume updated", "robo_id": robo_id, "current_volume": volume})
+            robo_volume = volume  # Update volume
+            return JsonResponse({"message": "Volume updated", "robo_id": robo_id, "current_volume": robo_volume})
         else:
-            return JsonResponse({"error": "Volume must be between 0 and 100"}, status=400)
+            return JsonResponse({"error": "Volume must be between 0 and 150"}, status=400)
     except ValueError:
         return JsonResponse({"error": "Invalid volume input. Volume must be an integer."}, status=400)
 
 def get_volume(request, robo_id):
-    volume = robo_volumes.get(robo_id, 50)  # Default volume is 50 if not set
-    return JsonResponse({"robo_id": robo_id, "current_volume": volume})
+    """API to get current volume (same for all robots)"""
+    return JsonResponse({"robo_id": robo_id, "current_volume": robo_volume})
 
 
 
