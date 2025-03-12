@@ -508,12 +508,14 @@ ROBOT_STATUS = {"is_on": False}
 
 @api_view(['POST'])
 def turn_on(request):
+    global ROBOT_STATUS
     ROBOT_STATUS["is_on"] = True
     return Response({"message": "Robot turned ON", "status": "ON"})
 
 # robot power off
 @api_view(['POST'])
 def turn_off(request):
+    global ROBOT_STATUS
     ROBOT_STATUS["is_on"] = False
     return Response({"message": "Robot turned OFF", "status": "OFF"})
 
