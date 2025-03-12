@@ -14,4 +14,10 @@ class CustomUser(AbstractUser):
     is_approved = models.BooleanField(default=False)
 
 
+
+class Poweron(models.Model):
+    status=models.BooleanField(default=False)
+    
+
+
     

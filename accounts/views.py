@@ -503,27 +503,32 @@ def superadmin_logout(request):
     return redirect('superadmin_login') 
 
 
-# robot power on 
-ROBOT_STATUS = False
+
+
+def get_poweron_object():
+    poweron, created = Poweron.objects.get_or_create(id=1, defaults={'status': False})
+    return poweron
 
 @api_view(['POST'])
 def turn_on(request):
-    global ROBOT_STATUS
-    ROBOT_STATUS = True
-    return Response({"message": "Robot turned ON", "status": "ON"})
+    poweron = get_poweron_object()
+    if not poweron.status:  # Only turn on if it's currently off
+        poweron.status = True
+        poweron.save()
+    return Response({"message": "Robot turned ON", "status": poweron.status})
 
-# robot power off
 @api_view(['POST'])
 def turn_off(request):
-    global ROBOT_STATUS
-    ROBOT_STATUS = False
-    return Response({"message": "Robot turned OFF", "status": "OFF"})
+    poweron = get_poweron_object()
+    if poweron.status:  # Only turn off if it's currently on
+        poweron.status = False
+        poweron.save()
+    return Response({"message": "Robot turned OFF", "status": poweron.status})
 
-# robot power status
 @api_view(['GET'])
 def robot_status(request):
-    return Response({"status": "ON" if ROBOT_STATUS else "OFF"})
-
+    poweron = get_poweron_object()
+    return Response({"status": "ON" if poweron.status else "OFF"})
 
 STATUS = {"state": "UNKNOWN", "last_updated": datetime.utcnow()}
 
