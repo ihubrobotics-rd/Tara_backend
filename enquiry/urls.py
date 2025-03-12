@@ -36,4 +36,11 @@ urlpatterns = [
 
     path("volume/set/<str:robo_id>/<int:volume>/", set_volume, name="set_volume"),
     path("volume/get/<str:robo_id>/", get_volume, name="get_volume"),
+
+
+
+    path('robot/message/post/<str:robot_id>/', post_message, name="post_message"),
+    path('robot/message/get/<str:robot_id>/', get_message, name="get_message"),
+    path('robot/button/clicked/<str:robot_id>/', button_click, name="button_click"),
+    path('robot/button/status/<str:robot_id>/', button_status, name="button_status"),
 ]

@@ -464,3 +464,47 @@ def set_volume(request, robo_id, volume):
 def get_volume(request, robo_id):
     volume = robo_volumes.get(robo_id, 50)  # Default volume is 50 if not set
     return JsonResponse({"robo_id": robo_id, "current_volume": volume})
+
+
+
+MESSAGE_CACHE_KEY = "latest_message_{}"
+BUTTON_STATUS_KEY = "button_status_{}"
+
+@api_view(['POST'])
+def post_message(request, robot_id: str):
+    """API to post a message and store it in cache for 5 minutes for a specific robot"""
+    message = request.data.get("message")
+    if not message:
+        return Response({"error": "Message is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    cache.set(MESSAGE_CACHE_KEY.format(robot_id), message, timeout=3) 
+    return Response({"status": "ok", "message": "Message posted successfully"}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+def get_message(request, robot_id: str):
+    """API to get the latest message for a specific robot, or return 'no message' if expired"""
+    message = cache.get(MESSAGE_CACHE_KEY.format(robot_id))
+    if not message:
+        return Response({"status": "no message"}, status=status.HTTP_200_OK)
+
+    return Response({"status": "ok", "message": message}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def button_click(request, robot_id: str):
+    """API to set button status to true or false for a specific robot, resets after 5 minutes"""
+    status_value = request.data.get("status")
+
+    if status_value not in ["true", "false"]:
+        return Response({"error": "Invalid status. Use 'true' or 'false'."}, status=status.HTTP_400_BAD_REQUEST)
+
+    cache.set(BUTTON_STATUS_KEY.format(robot_id), status_value, timeout=3)  # Store for 5 minutes
+    return Response({"status": "ok", "message": f"Button clicked, status set to {status_value}"}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def button_status(request, robot_id: str):
+    """API to get button status for a specific robot - 'true', 'false', or 'no message' after expiry"""
+    status_value = cache.get(BUTTON_STATUS_KEY.format(robot_id), "no message")  # Default is "no message"
+    return Response({"status": status_value}, status=status.HTTP_200_OK)
