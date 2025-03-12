@@ -504,25 +504,25 @@ def superadmin_logout(request):
 
 
 # robot power on 
-ROBOT_STATUS = {"is_on": False}
+ROBOT_STATUS = False
 
 @api_view(['POST'])
 def turn_on(request):
     global ROBOT_STATUS
-    ROBOT_STATUS["is_on"] = True
+    ROBOT_STATUS = True
     return Response({"message": "Robot turned ON", "status": "ON"})
 
 # robot power off
 @api_view(['POST'])
 def turn_off(request):
     global ROBOT_STATUS
-    ROBOT_STATUS["is_on"] = False
+    ROBOT_STATUS = False
     return Response({"message": "Robot turned OFF", "status": "OFF"})
 
 # robot power status
 @api_view(['GET'])
 def robot_status(request):
-    return Response({"status": "ON" if ROBOT_STATUS["is_on"] else "OFF"})
+    return Response({"status": "ON" if ROBOT_STATUS else "OFF"})
 
 
 STATUS = {"state": "UNKNOWN", "last_updated": datetime.utcnow()}
