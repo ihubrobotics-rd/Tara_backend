@@ -35,3 +35,7 @@ class NavigationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Navigation
         fields = ['id', 'user', 'nav_id', 'name']
+
+
+class STCMFileSerializer(serializers.Serializer):
+    file = serializers.FileField()

@@ -107,7 +107,11 @@ def create_robot(request):
                 'power':serialized_data['power'],
                 'voltage':serialized_data['voltage'],
                 'quality':serialized_data['quality'],
-                'map':serialized_data['map']
+                'map':serialized_data['map'],
+                'emergency_stop':serialized_data['emergency_stop'],
+                'motor_brake_released':serialized_data['motor_brake_released'],
+                'ready_to_navigate':serialized_data['ready_to_navigate']
+                
 
                
             }
@@ -386,7 +390,10 @@ def update_robot_by_id(request, robo_id):
                     'language': serialized_data['language'],
                     'subscription': serialized_data['subscription'],
                     'quality':serialized_data['quality'],
-                    'map':serialized_data['map']
+                    'map':serialized_data['map'],
+                    'emergency_stop':serialized_data['emergency_stop'],
+                    'motor_brake_released':serialized_data['motor_brake_released'],
+                    'ready_to_navigate':serialized_data['ready_to_navigate']
                 })
 
             with open(file_path, 'w') as json_file:

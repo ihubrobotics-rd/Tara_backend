@@ -17,6 +17,9 @@ class Robot(models.Model):
     energy=models.CharField(max_length=200,null=True,blank=True)
     quality=models.CharField(max_length=200,null=True,blank=True)
     map=models.BooleanField(default=False)
+    emergency_stop=models.BooleanField(default=False)
+    motor_brake_released=models.BooleanField(default=False)
+    ready_to_navigate=models.BooleanField(default=False)
 
     def __str__(self):
         return self.robo_name

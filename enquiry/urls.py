@@ -28,5 +28,12 @@ urlpatterns = [
     path('navigation/create/', create_navigation, name='create_navigation'),
     path('navigation/list/<int:user_id>/', list_navigation, name='list_navigation'),
     path('navigation/<int:nav_id>/', get_navigation_by_id, name='get_navigation_by_id'),
+    path('navigation/edit/<int:navigation_id>/', edit_navigation, name='edit_navigation'),
     path('navigation/last-clicked/', get_last_clicked_navigation, name='get_last_clicked_navigation'),
+
+    path('upload-stcm/', upload_stcm_file, name='upload-stcm'),
+    path('latest-stcm/', get_latest_stcm_file, name='latest-stcm'),
+
+    path("volume/set/<str:robo_id>/<int:volume>/", set_volume, name="set_volume"),
+    path("volume/get/<str:robo_id>/", get_volume, name="get_volume"),
 ]

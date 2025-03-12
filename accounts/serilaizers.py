@@ -48,3 +48,4 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return value
 
 
+

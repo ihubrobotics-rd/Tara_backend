@@ -5,6 +5,10 @@ from .models import Enquiry
 from .serializers import *
 from django.shortcuts import get_object_or_404
 from django.core.cache import cache
+import os
+from django.conf import settings
+from django.core.files.storage import default_storage
+from django.http import JsonResponse
 
 # enquiry logo create
 @api_view(['POST'])
@@ -134,13 +138,12 @@ def list_subbuttons(request):
     - If only `user_id` is provided, filter by user's enquiries.
     - If only `enquiry_id` is provided, filter by the specific enquiry.
     """
-    user_id = request.GET.get('user_id')  # Get user_id from query parameters
-    enquiry_id = request.GET.get('enquiry_id')  # Get enquiry_id from query parameters
+    user_id = request.GET.get('user_id')  
+    enquiry_id = request.GET.get('enquiry_id') 
 
     subbuttons = SubButton.objects.select_related('enquiry')
 
     if user_id and enquiry_id:
-        # Filter only subbuttons that match BOTH user_id and enquiry_id
         subbuttons = subbuttons.filter(enquiry__user_id=user_id, enquiry_id=enquiry_id)
     elif user_id:
         subbuttons = subbuttons.filter(enquiry__user_id=user_id)
@@ -309,6 +312,31 @@ def create_navigation(request):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['PUT'])
+def edit_navigation(request, navigation_id):
+    """Allows both Admin and Users to edit navigation without authentication"""
+
+    try:
+        navigation = Navigation.objects.get(id=navigation_id)
+    except Navigation.DoesNotExist:
+        return Response({"error": "Navigation entry not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    user = request.user if request.user.is_authenticated else None
+
+    if user:
+        if user.role != "admin" and navigation.user.id != user.id:
+            return Response({"error": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = NavigationSerializer(navigation, data=request.data, partial=True, context={'request': request})
+    
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"status": "ok", "message": "Navigation updated successfully", "data": serializer.data}, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 
 
 @api_view(['GET'])
@@ -333,7 +361,7 @@ def get_navigation_by_id(request, nav_id):
     try:
         navigation = Navigation.objects.get(id=nav_id)
         # Store last clicked navigation in cache (memory) with 10 seconds expiration
-        cache.set(LAST_CLICKED_NAVIGATION_KEY, {"id": navigation.id, "name": navigation.name}, timeout=30)
+        cache.set(LAST_CLICKED_NAVIGATION_KEY, {"id": navigation.id,"nav_id":navigation.nav_id, "name": navigation.name}, timeout=30)
     except Navigation.DoesNotExist:
         return Response({"error": "Navigation not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -342,7 +370,8 @@ def get_navigation_by_id(request, nav_id):
         "message": "Navigation retrieved successfully",
         "data": {
             "id": navigation.id,
-            "name": navigation.name
+            "name": navigation.name,
+            "nav_id":navigation.nav_id
         }
     }, status=status.HTTP_200_OK)
 
@@ -360,3 +389,78 @@ def get_last_clicked_navigation(request):
         "message": "Last clicked navigation retrieved successfully",
         "data": last_clicked
     }, status=status.HTTP_200_OK)
+
+
+# Define the upload directory
+UPLOAD_DIR = os.path.join(settings.MEDIA_ROOT, 'stm_files')
+
+# Ensure the entire directory structure exists
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+@api_view(['POST'])
+def upload_stcm_file(request):
+    """API to upload .stcm file and replace all existing files in the folder"""
+    serializer = STCMFileSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        file = serializer.validated_data['file']
+        
+        if not file.name.endswith('.stcm'):
+            return Response({"error": "Only .stcm files are allowed"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Remove all existing .stcm files in the directory
+        for existing_file in os.listdir(UPLOAD_DIR):
+            if existing_file.endswith('.stcm'):
+                os.remove(os.path.join(UPLOAD_DIR, existing_file))
+
+        # Define the file path with its original name
+        file_path = os.path.join(UPLOAD_DIR, file.name)
+
+        # Save the new file
+        with open(file_path, 'wb+') as destination:
+            for chunk in file.chunks():
+                destination.write(chunk)
+
+        return Response({"message": "File uploaded successfully", "file_name": file.name}, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_latest_stcm_file(request):
+    """API to get the latest uploaded .stcm file"""
+    try:
+        # Get all .stcm files in the directory (should be only one file)
+        files = [f for f in os.listdir(UPLOAD_DIR) if f.endswith('.stcm')]
+        
+        if not files:
+            return Response({"message": "No .stcm files found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # There should only be one file, so get the first (only) file
+        latest_file = files[0]
+
+        # Construct the file URL
+        file_url = os.path.join(settings.MEDIA_URL,  'stm_files', latest_file)
+
+        return Response({"latest_file": latest_file, "file_url": request.build_absolute_uri(file_url)})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Store volumes for different robots in memory
+robo_volumes = {}
+
+def set_volume(request, robo_id, volume):
+    try:
+        volume = int(volume)  # Ensure volume is an integer
+
+        if 0 <= volume <= 150:
+            robo_volumes[robo_id] = volume
+            return JsonResponse({"message": "Volume updated", "robo_id": robo_id, "current_volume": volume})
+        else:
+            return JsonResponse({"error": "Volume must be between 0 and 100"}, status=400)
+    except ValueError:
+        return JsonResponse({"error": "Invalid volume input. Volume must be an integer."}, status=400)
+
+def get_volume(request, robo_id):
+    volume = robo_volumes.get(robo_id, 50)  # Default volume is 50 if not set
+    return JsonResponse({"robo_id": robo_id, "current_volume": volume})

@@ -192,6 +192,7 @@ def login_user(request):
                     "email": user.email,
                     "profile_pic": request.build_absolute_uri(user.profile_pic.url) if user.profile_pic else None,
                     "role": user.role,
+                    "phone_no":user.phone_number
                 },
             },
             status=status.HTTP_200_OK,
