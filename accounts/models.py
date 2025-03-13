@@ -17,6 +17,11 @@ class CustomUser(AbstractUser):
 
 class Poweron(models.Model):
     status=models.BooleanField(default=False)
+
+
+class ModelStatus(models.Model):
+    status = models.BooleanField(default=False)  # Stores True/False
+    updated_at = models.DateTimeField(auto_now=True)  # Tracks last update time
     
 
 

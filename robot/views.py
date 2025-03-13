@@ -1457,14 +1457,7 @@ def list_zip_files(request, robo_id):
 
 
 
-# video playing updation
-state = {
-    "listening": False,
-    "waiting": False,
-    "speaking": False,
-}
-
-# Mapping of commands to state keys
+# Mapping of commands to model fields
 COMMAND_MAPPING = {
     "SPEAKING_VIDEO": "speaking",
     "LISTENING_VIDEO": "listening",
@@ -1478,34 +1471,50 @@ def update_status(request):
     Only one key can be True at a time.
     """
     data = request.data
-    command = data.get("command")  
+    command = data.get("command")
+    
     if not command:
-        return Response({"message": "No command provided", "command": None, "data": state}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "No command provided", "command": None}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     if command not in COMMAND_MAPPING:
-        return Response({"error": "Invalid command provided", "command": command}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Invalid command provided", "command": command}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     key_to_update = COMMAND_MAPPING[command]
-    for key in state:
-        state[key] = False
-    state[key_to_update] = True
-    return Response({
-        "status": "OK",
-        "command": command,
-        key_to_update: True
-    }, status=status.HTTP_200_OK)
+
+    # Get the single status entry or create one
+    status_obj, created = VideoStatus.objects.get_or_create(id=1)
+    status_obj.set_status(key_to_update)
+
+    return Response(
+        {"status": "OK", "command": command, key_to_update: True},
+        status=status.HTTP_200_OK,
+    )
 
 @api_view(["GET"])
 def list_status(request):
     """
-    API to return the current state of all statuses.
+    API to return the current state of all statuses from the database.
     """
+    status_obj, created = VideoStatus.objects.get_or_create(id=1)
+    
     return Response(
         {
             "status": "OK",
-            "data": state,
+            "data": {
+                "listening": status_obj.listening,
+                "waiting": status_obj.waiting,
+                "speaking": status_obj.speaking,
+            },
         },
         status=status.HTTP_200_OK,
     )
+
 
 
 @api_view(['GET'])

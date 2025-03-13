@@ -34,3 +34,26 @@ class Navigation(models.Model):
     name = models.CharField(max_length=100) 
     def __str__(self):
         return f"{self.name} - {self.nav_id}"
+
+
+class LastClickedNavigation(models.Model):
+    navigation = models.OneToOneField("Navigation", on_delete=models.CASCADE, related_name="last_clicked", null=True, blank=True)
+    clicked_at = models.DateTimeField(auto_now=True)
+
+
+class RoboVolume(models.Model):
+    robo_id = models.CharField(max_length=255, unique=True)  
+    volume = models.IntegerField(default=50)  
+    updated_at = models.DateTimeField(auto_now=True)  
+
+
+
+class RobotMessage(models.Model):
+    robot_id = models.CharField(max_length=255, unique=True)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now=True)  # Auto-update timestamp
+
+class ButtonStatus(models.Model):
+    robot_id = models.CharField(max_length=255, unique=True)
+    status = models.CharField(max_length=5, choices=[("true", "True"), ("false", "False")])
+    updated_at = models.DateTimeField(auto_now=True)  # Auto-update timestamp

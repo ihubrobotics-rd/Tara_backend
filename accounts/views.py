@@ -699,23 +699,27 @@ def verify_user_password(request, user_id):
         return Response({'message': 'Incorrect password'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+
 @api_view(['POST'])
 def update_model_status(request):
-    """Updates the status (True/False) and stores it in cache."""
+    """Updates the status (True/False) and stores it in the database."""
     new_status = request.data.get("status")
 
-    if new_status not in [True, False]:  # Ensure only True or False is accepted
+    if not isinstance(new_status, bool):  # Ensure only True or False is accepted
         return Response({"error": "Invalid status. Use True or False."}, status=status.HTTP_400_BAD_REQUEST)
 
-    cache.set("current_status", new_status, timeout=None)  # Store status in cache with no expiry
+    # Ensure only one status record exists
+    obj, _ = ModelStatus.objects.update_or_create(id=1, defaults={"status": new_status})
+
     return Response({"message": "Status updated successfully", "status": new_status}, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 def get_model_status(request):
-    """Retrieves the current status from cache."""
-    current_status = cache.get("current_status")
-
-    if current_status is None:
+    """Retrieves the current status from the database."""
+    try:
+        current_status = ModelStatus.objects.get(id=1).status
+    except ModelStatus.DoesNotExist:
         return Response({"error": "No status found. Please update status first."}, status=status.HTTP_404_NOT_FOUND)
 
     return Response({"message": "Current status retrieved successfully", "status": current_status}, status=status.HTTP_200_OK)

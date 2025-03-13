@@ -9,6 +9,7 @@ import os
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
+from django.utils.timezone import now, timedelta
 
 # enquiry logo create
 @api_view(['POST'])
@@ -353,15 +354,19 @@ def list_navigation(request, user_id):
     return Response({"status": "ok","message":"data retrieved successfully", "data": serializer.data}, status=status.HTTP_200_OK)
 
 
-LAST_CLICKED_NAVIGATION_KEY = "last_clicked_navigation"
-
 @api_view(['GET'])
 def get_navigation_by_id(request, nav_id):
-    """Retrieve a specific navigation item's ID and name when clicked and store it as last clicked"""
+    """
+    Retrieve a specific navigation item's ID and name when clicked 
+    and store it as last clicked in the database.
+    """
     try:
         navigation = Navigation.objects.get(id=nav_id)
-        # Store last clicked navigation in cache (memory) with 10 seconds expiration
-        cache.set(LAST_CLICKED_NAVIGATION_KEY, {"id": navigation.id,"nav_id":navigation.nav_id, "name": navigation.name}, timeout=30)
+        # Store the last clicked navigation in the database
+        last_clicked, created = LastClickedNavigation.objects.get_or_create(id=1)
+        last_clicked.navigation = navigation
+        last_clicked.save()
+
     except Navigation.DoesNotExist:
         return Response({"error": "Navigation not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -370,26 +375,36 @@ def get_navigation_by_id(request, nav_id):
         "message": "Navigation retrieved successfully",
         "data": {
             "id": navigation.id,
-            "name": navigation.name,
-            "nav_id":navigation.nav_id
+            "nav_id": navigation.nav_id,
+            "name": navigation.name
         }
     }, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
 def get_last_clicked_navigation(request):
-    """Retrieve the last clicked navigation from memory, expire after 10 seconds"""
-    last_clicked = cache.get(LAST_CLICKED_NAVIGATION_KEY)
+    """
+    Retrieve the last clicked navigation from the database.
+    """
+    try:
+        last_clicked = LastClickedNavigation.objects.get(id=1)
+        if not last_clicked.navigation:
+            return Response({"error": "No navigation has been clicked yet."}, status=status.HTTP_404_NOT_FOUND)
 
-    if not last_clicked:
-        return Response({"error": "No navigation has been clicked yet or it has expired."}, status=status.HTTP_404_NOT_FOUND)
+        navigation = last_clicked.navigation
 
-    return Response({
-        "status": "ok",
-        "message": "Last clicked navigation retrieved successfully",
-        "data": last_clicked
-    }, status=status.HTTP_200_OK)
+        return Response({
+            "status": "ok",
+            "message": "Last clicked navigation retrieved successfully",
+            "data": {
+                "id": navigation.id,
+                "nav_id": navigation.nav_id,
+                "name": navigation.name
+            }
+        }, status=status.HTTP_200_OK)
 
+    except LastClickedNavigation.DoesNotExist:
+        return Response({"error": "No navigation has been clicked yet."}, status=status.HTTP_404_NOT_FOUND)
 
 # Define the upload directory
 UPLOAD_DIR = os.path.join(settings.MEDIA_ROOT, 'stm_files')
@@ -446,66 +461,97 @@ def get_latest_stcm_file(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# Global variable to store volume (default is 50)
-robo_volume = 50  
-
+# Store volumes for different robots in memory
 def set_volume(request, robo_id, volume):
-    """API to set volume (same for all robots)"""
-    global robo_volume  # Use global variable
+    """
+    Set the volume for a specific robot and save it in the database.
+    """
     try:
         volume = int(volume)  # Ensure volume is an integer
+
         if 0 <= volume <= 150:
-            robo_volume = volume  # Update volume
-            return JsonResponse({"message": "Volume updated", "robo_id": robo_id, "current_volume": robo_volume})
+            robo_volume, created = RoboVolume.objects.get_or_create(robo_id=robo_id)
+            robo_volume.volume = volume
+            robo_volume.save()
+
+            return JsonResponse({
+                "message": "Volume updated",
+                "robo_id": robo_id,
+                "current_volume": volume
+            })
         else:
             return JsonResponse({"error": "Volume must be between 0 and 150"}, status=400)
     except ValueError:
         return JsonResponse({"error": "Invalid volume input. Volume must be an integer."}, status=400)
 
 def get_volume(request, robo_id):
-    """API to get current volume (same for all robots)"""
-    return JsonResponse({"robo_id": robo_id, "current_volume": robo_volume})
+    """
+    Get the current volume of a specific robot from the database.
+    """
+    try:
+        robo_volume = RoboVolume.objects.get(robo_id=robo_id)
+        return JsonResponse({
+            "robo_id": robo_id,
+            "current_volume": robo_volume.volume
+        })
+    except RoboVolume.DoesNotExist:
+        return JsonResponse({
+            "robo_id": robo_id,
+            "current_volume": 50  # Default volume if not set
+        })
 
 
 
-MESSAGE_CACHE_KEY = "latest_message_{}"
-BUTTON_STATUS_KEY = "button_status_{}"
+EXPIRATION_TIME = timedelta(seconds=15)  # Set expiration to 15 seconds
 
 @api_view(['POST'])
 def post_message(request, robot_id: str):
-    """API to post a message and store it in cache for 5 minutes for a specific robot"""
+    """API to post a message and store it in the database for a specific robot."""
     message = request.data.get("message")
     if not message:
         return Response({"error": "Message is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-    cache.set(MESSAGE_CACHE_KEY.format(robot_id), message, timeout=15) 
+    robot_message, created = RobotMessage.objects.update_or_create(
+        robot_id=robot_id,
+        defaults={"message": message, "created_at": now()}
+    )
     return Response({"status": "ok", "message": "Message posted successfully"}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET'])
 def get_message(request, robot_id: str):
-    """API to get the latest message for a specific robot, or return 'no message' if expired"""
-    message = cache.get(MESSAGE_CACHE_KEY.format(robot_id))
-    if not message:
-        return Response({"status": "ok","message": "no message"}, status=status.HTTP_200_OK)
-
-    return Response({"status": "ok", "message": message}, status=status.HTTP_200_OK)
+    """API to get the latest message for a specific robot, or return 'no message' if expired (after 15 sec)."""
+    try:
+        message_obj = RobotMessage.objects.get(robot_id=robot_id)
+        if message_obj.created_at < now() - EXPIRATION_TIME:  # Expire after 15 sec
+            return Response({"status": "ok", "message": "no message"}, status=status.HTTP_200_OK)
+        return Response({"status": "ok", "message": message_obj.message}, status=status.HTTP_200_OK)
+    except RobotMessage.DoesNotExist:
+        return Response({"status": "ok", "message": "no message"}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 def button_click(request, robot_id: str):
-    """API to set button status to true or false for a specific robot, resets after 5 minutes"""
+    """API to set button status to true or false for a specific robot, resets after 15 seconds."""
     status_value = request.data.get("status")
 
     if status_value not in ["true", "false"]:
         return Response({"error": "Invalid status. Use 'true' or 'false'."}, status=status.HTTP_400_BAD_REQUEST)
 
-    cache.set(BUTTON_STATUS_KEY.format(robot_id), status_value, timeout=15)  # Store for 5 minutes
+    button_status, created = ButtonStatus.objects.update_or_create(
+        robot_id=robot_id,
+        defaults={"status": status_value, "updated_at": now()}
+    )
     return Response({"status": "ok", "message": f"Button clicked, status set to {status_value}"}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
 def button_status(request, robot_id: str):
-    """API to get button status for a specific robot - 'true', 'false', or 'no message' after expiry"""
-    status_value = cache.get(BUTTON_STATUS_KEY.format(robot_id), "no message")  # Default is "no message"
-    return Response({"status": status_value}, status=status.HTTP_200_OK)
+    """API to get button status for a specific robot - 'true', 'false', or 'no message' after expiry (15 sec)."""
+    try:
+        button_obj = ButtonStatus.objects.get(robot_id=robot_id)
+        if button_obj.updated_at < now() - EXPIRATION_TIME:  # Expire after 15 sec
+            return Response({"status": "no message"}, status=status.HTTP_200_OK)
+        return Response({"status": button_obj.status}, status=status.HTTP_200_OK)
+    except ButtonStatus.DoesNotExist:
+        return Response({"status": "no message"}, status=status.HTTP_200_OK)

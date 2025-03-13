@@ -82,3 +82,17 @@ class RobotFile(models.Model):
 
     def __str__(self):
         return f"{self.robot.robo_name} - {self.zip_file.name}"
+
+
+class VideoStatus(models.Model):
+    listening = models.BooleanField(default=False)
+    waiting = models.BooleanField(default=False)
+    speaking = models.BooleanField(default=False)
+
+    def set_status(self, active_key):
+        """
+        Update the status so that only one field is True at a time.
+        """
+        for field in ["listening", "waiting", "speaking"]:
+            setattr(self, field, field == active_key)
+        self.save()
